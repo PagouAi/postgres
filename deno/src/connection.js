@@ -388,6 +388,7 @@ function Connection(options, queues = {}, { onopen = noop, onend = noop, onclose
   }
 
   function queryError(query, err) {
+    if (!query || typeof query !== 'object') return new Promise((_, reject) => reject(err))
     'query' in err || 'parameters' in err || Object.defineProperties(err, {
       stack: { value: err.stack + query.origin.replace(/.*\n/, '\n'), enumerable: options.debug },
       query: { value: query.string, enumerable: options.debug },
