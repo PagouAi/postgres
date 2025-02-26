@@ -387,7 +387,13 @@ function Connection(options, queues = {}, { onopen = noop, onend = noop, onclose
   }
 
   function queryError(query, err) {
-    if (!query || typeof query !== 'object') return new Promise((_, reject) => reject(err))
+    if (!query || typeof query !== 'object') {
+      // Get network error
+      if (err instanceof AggregateError && err.errors.some(e => e.message.includes('ECONNREFUSED'))) {
+        throw new Error('Failed to connect to the database')
+      }
+      throw err
+    }
     'query' in err || 'parameters' in err || Object.defineProperties(err, {
       stack: { value: err.stack + query.origin.replace(/.*\n/, '\n'), enumerable: options.debug },
       query: { value: query.string, enumerable: options.debug },
